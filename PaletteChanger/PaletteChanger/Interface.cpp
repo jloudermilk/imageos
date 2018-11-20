@@ -1,12 +1,21 @@
 
-PaletteChanger changer
+#include "PaletteChanger.hpp"
+
+PaletteChanger* changer;
 
 extern bool Startup() 
 {
 	changer = new PaletteChanger();
+	return false;
 }
-
-int main() 
+extern void AddPalette(float* hsv,int size) 
 {
-	return 0;
+	changer->AddPalette(hsv,size);
+
+}
+extern unsigned char* SwapPalettes(unsigned char* rgbBytes) 
+{
+	Color c = Color(0, 0, 0);
+	changer->SwapPixels(c);
+	return rgbBytes;
 }

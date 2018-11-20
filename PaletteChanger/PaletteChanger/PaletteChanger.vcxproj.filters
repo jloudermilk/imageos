@@ -4,7 +4,7 @@
     <ClCompile Include="Interface.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h" />
     <ClInclude Include="PaletteChanger.hpp" />
+    <ClInclude Include="pch.h" />
   </ItemGroup>
 </Project>

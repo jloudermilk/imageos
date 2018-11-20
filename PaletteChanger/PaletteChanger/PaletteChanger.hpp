@@ -1,171 +1,198 @@
 #pragma once
 #include <vector>
-#include <math.h>
 #include <algorithm>
 #include <vector>
 #include <map>
 #include <cmath>
 
-typedef struct {
-	double r;       // a fraction between 0 and 1
-	double g;       // a fraction between 0 and 1
-	double b;       // a fraction between 0 and 1
-} rgb;
 
-typedef struct {
-	double h;       // angle in degrees
-	double s;       // a fraction between 0 and 1
-	double v;       // a fraction between 0 and 1
-} hsv;
-hsv TempHSV; //this is dirty but im short on time
 
-bool hueSort(hsv &i, hsv &j) {
-	return (std::abs(i.h - TempHSV.h) < std::abs(j.h - TempHSV.h));
+class Color 
+{
+public:
+	Color() {};
+	Color(float red, float green, float blue) 
+	{
+		r = red;
+		g = green;
+		b = blue;
+		rgb2hsv();
+	}
+	~Color() {};
+	float r, g, b, h, s, v;
+	void rgb2hsv();
+	void hsv2rgb();
+private:
+	
+
+};
+
+Color TempColor; //this is dirty but im short on time
+
+bool hueSort(Color &i, Color &j) {
+	return (std::abs(i.h - TempColor.h) < std::abs(j.h - TempColor.h));
 }
 
-bool saturationSort(hsv &i, hsv &j) {
-	return (std::abs(i.s - TempHSV.s) < std::abs(j.s - TempHSV.s));
+bool saturationSort(Color &i, Color &j) {
+	return (std::abs(i.s - TempColor.s) < std::abs(j.s - TempColor.s));
 }
-bool brightnessSort(hsv &i, hsv &j) {
-	return (std::abs(i.v - TempHSV.v) < std::abs(j.v - TempHSV.v));
+bool brightnessSort(Color &i, Color &j) {
+	return (std::abs(i.v - TempColor.v) < std::abs(j.v - TempColor.v));
 }
-
-
-static hsv   rgb2hsv(rgb in);
-static rgb   hsv2rgb(hsv in);
+namespace std
+{
+	template<> struct less<Color>
+	{
+		bool operator() (const Color& lhs, const Color& rhs) const
+		{
+			return lhs.r < rhs.r;
+		}
+	};
+}
 
 class PaletteChanger
 {
 public:
 	PaletteChanger() {};
 	~PaletteChanger() {};
-	std::vector<hsv> palette;
-	std::map<rgb, hsv> colorMap;
-
-
-private:
-	rgb SwapPixels(const rgb in)
+	void AddPalette(float* hsvFloats,int size) 
+	{
+		float* point = hsvFloats;
+		for (int i = 0; i < size; i++)
+		{
+			Color c;
+			c.h = *point;
+			point++;
+			c.s = *point;
+			point++;
+			c.v = *point;
+			c.hsv2rgb();
+		}
+	}
+	Color SwapPixels(Color in)
 	{
 		if (colorMap.count(in) > 0)
 		{
-			return hsv2rgb(colorMap.at(in));
+			colorMap.at(in);
 		}
-		TempHSV = rgb2hsv(in);
+		TempColor = in;
 		std::sort(palette.begin(),palette.end(), brightnessSort);
 		int half = palette.size() / 2;
 		std::sort(palette.begin(), palette.begin() + half, hueSort);
 		half /= 2;
 		std::sort(palette.begin(), palette.begin() + half, saturationSort);
-		colorMap.insert(std::pair<rgb,hsv>(in, palette.at(0)));
-		rgb out = hsv2rgb(palette.at(0));
+		
+		Color out = palette.at(0);
+		std::map<Color,Color>::iterator it = colorMap.begin();
+		colorMap.insert(it,std::pair<Color, Color>( in, out) );
+		
 		return out;
 	}
+private:
+	std::vector<Color> palette;
+	std::map<Color, Color> colorMap;
 };
 
 
-PaletteChanger changer;
 
-extern unsigned char* SwapPalettes(unsigned char* rgbaBytes);
-
-hsv rgb2hsv(rgb in)
+//stole this from stackoverflow
+void Color::rgb2hsv()
 {
-	hsv         out;
 	double      min, max, delta;
 
-	min = in.r < in.g ? in.r : in.g;
-	min = min < in.b ? min : in.b;
+	min = this->r < this->g ? this->r : this->g;
+	min = min < this->b ? min : this->b;
 
-	max = in.r > in.g ? in.r : in.g;
-	max = max > in.b ? max : in.b;
+	max = this->r > this->g ? this->r : this->g;
+	max = max > this->b ? max : this->b;
 
-	out.v = max;                                // v
+	this->v = max;                                // v
 	delta = max - min;
 	if (delta < 0.00001)
 	{
-		out.s = 0;
-		out.h = 0; // undefined, maybe nan?
-		return out;
+		this->s = 0;
+		this->h = 0; // undefined, maybe nan?
+		return;
 	}
 	if (max > 0.0) { // NOTE: if Max is == 0, this divide would cause a crash
-		out.s = (delta / max);                  // s
+		this->s = (delta / max);                  // s
 	}
 	else {
 		// if max is 0, then r = g = b = 0
 		// s = 0, h is undefined
-		out.s = 0.0;
-		out.h = NAN;                            // its now undefined
-		return out;
+		this->s = 0.0;
+		this->h = NAN;                            // its now undefined
+		return;
 	}
-	if (in.r >= max)                           // > is bogus, just keeps compilor happy
-		out.h = (in.g - in.b) / delta;        // between yellow & magenta
+	if (this->r >= max)                           // > is bogus, just keeps compilor happy
+		this->h = (this->g - this->b) / delta;        // between yellow & magenta
 	else
-		if (in.g >= max)
-			out.h = 2.0 + (in.b - in.r) / delta;  // between cyan & yellow
+		if (this->g >= max)
+			this->h = 2.0 + (this->b - this->r) / delta;  // between cyan & yellow
 		else
-			out.h = 4.0 + (in.r - in.g) / delta;  // between magenta & cyan
+			this->h = 4.0 + (this->r - this->g) / delta;  // between magenta & cyan
 
-	out.h *= 60.0;                              // degrees
+	this->h *= 60.0;                              // degrees
 
-	if (out.h < 0.0)
-		out.h += 360.0;
+	if (this->h < 0.0)
+		this->h += 360.0;
 
-	return out;
+	return;
 }
 
-rgb hsv2rgb(hsv in)
+void Color::hsv2rgb()
 {
 	double      hh, p, q, t, ff;
 	long        i;
-	rgb         out;
 
-	if (in.s <= 0.0) {       // < is bogus, just shuts up warnings
-		out.r = in.v;
-		out.g = in.v;
-		out.b = in.v;
-		return out;
+	if (this->s <= 0.0) {       // < is bogus, just shuts up warnings
+		this->r = this->v;
+		this->g = this->v;
+		this->b = this->v;
+		return;
 	}
-	hh = in.h;
+	hh = this->h;
 	if (hh >= 360.0) hh = 0.0;
 	hh /= 60.0;
 	i = (long)hh;
 	ff = hh - i;
-	p = in.v * (1.0 - in.s);
-	q = in.v * (1.0 - (in.s * ff));
-	t = in.v * (1.0 - (in.s * (1.0 - ff)));
+	p = this->v * (1.0 - this->s);
+	q = this->v * (1.0 - (this->s * ff));
+	t = this->v * (1.0 - (this->s * (1.0 - ff)));
 
 	switch (i) {
 	case 0:
-		out.r = in.v;
-		out.g = t;
-		out.b = p;
+		this->r = this->v;
+		this->g = t;
+		this->b = p;
 		break;
 	case 1:
-		out.r = q;
-		out.g = in.v;
-		out.b = p;
+		this->r = q;
+		this->g = this->v;
+		this->b = p;
 		break;
 	case 2:
-		out.r = p;
-		out.g = in.v;
-		out.b = t;
+		this->r = p;
+		this->g = this->v;
+		this->b = t;
 		break;
 
 	case 3:
-		out.r = p;
-		out.g = q;
-		out.b = in.v;
+		this->r = p;
+		this->g = q;
+		this->b = this->v;
 		break;
 	case 4:
-		out.r = t;
-		out.g = p;
-		out.b = in.v;
+		this->r = t;
+		this->g = p;
+		this->b = this->v;
 		break;
 	case 5:
 	default:
-		out.r = in.v;
-		out.g = p;
-		out.b = q;
+		this->r = this->v;
+		this->g = p;
+		this->b = q;
 		break;
 	}
-	return out;
+	return;
 }
