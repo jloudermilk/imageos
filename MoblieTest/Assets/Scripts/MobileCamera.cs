@@ -51,14 +51,14 @@ public class MobileCamera : MonoBehaviour
     }
     private void Update()
     {
-        if(!camAvailable)
+        if (!camAvailable)
         {
             return;
         }
         float ratio = (float)CurrentCam.width / (float)CurrentCam.height;
         Fitter.aspectRatio = ratio;
 
-        float scaleY = CurrentCam.videoVerticallyMirrored ? -1f: 1f;
+        float scaleY = CurrentCam.videoVerticallyMirrored ? -1f : 1f;
         Background.rectTransform.localScale = new Vector3(1f, scaleY, 1f);
 
         int orient = -CurrentCam.videoRotationAngle;
