@@ -10,7 +10,7 @@ extern bool Startup()
 }
 extern void AddPalette(float* hsv,int size) 
 {
-	changer->AddPalette(hsv,size);
+	//changer->AddPalette(hsv,size);
 
 }
 extern unsigned char* SwapPalettes(unsigned char* rgbBytes) 

@@ -13,6 +13,7 @@ public class MobileCamera : MonoBehaviour
     public RawImage Background;
     public AspectRatioFitter Fitter;
     public WebCamTexture CurrentCam;
+    public PaletteObject palette;
 
     private void Start()
     {
@@ -48,6 +49,8 @@ public class MobileCamera : MonoBehaviour
         CurrentCam.Play();
         Background.texture = CurrentCam;
         camAvailable = true;
+
+       
     }
     private void Update()
     {
@@ -63,5 +66,7 @@ public class MobileCamera : MonoBehaviour
 
         int orient = -CurrentCam.videoRotationAngle;
         Background.rectTransform.localEulerAngles = new Vector3(0, 0, orient);
+
+
     }
 }
