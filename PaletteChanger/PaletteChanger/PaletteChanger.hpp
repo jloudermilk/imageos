@@ -7,11 +7,11 @@
 
 using namespace std;
 
-class Color 
+class Color
 {
 public:
 	Color() {};
-	Color(float red, float green, float blue) 
+	Color(float red, float green, float blue)
 	{
 		r = red;
 		g = green;
@@ -23,7 +23,7 @@ public:
 	void rgb2hsv();
 	void hsv2rgb();
 private:
-	
+
 
 };
 
@@ -55,7 +55,7 @@ class PaletteChanger
 public:
 	PaletteChanger() {};
 	~PaletteChanger() {};
-	void AddPalette(float* rgbFloats,int size) 
+	void AddPalette(float* rgbFloats,int size)
 	{
 		float* point = rgbFloats;
 		for (int i = 0; i < size; i++)
@@ -69,7 +69,7 @@ public:
 			c.rgb2hsv();
 			palette.emplace(palette.begin(),c);
 		}
-		
+
 	}
 	Color SwapPixels(Color in)
 	{
@@ -83,10 +83,10 @@ public:
 		sort(palette.begin(), palette.begin() + half, hueSort);
 		half /= 2;
 		sort(palette.begin(), palette.begin() + half, saturationSort);
-		
+
 		Color out = palette.at(0);
 		colorMap.emplace( in, out );
-		
+
 		return out;
 	}
 private:
@@ -197,3 +197,30 @@ void Color::hsv2rgb()
 	}
 	return;
 }
+PaletteChanger* changer;
+
+	extern "C" bool Startup()
+	{
+		changer = new PaletteChanger();
+		return false;
+	}
+	extern "C" void ChangePalette(float* rgb, int size)
+	{
+		changer->AddPalette(rgb,size);
+
+	}
+	extern "C" unsigned char* SwapPalettes(unsigned char* rgbBytes,int length)
+	{
+		Color c = Color(1.0f, 0.0f, 0.0f);
+		unsigned char* bytes = rgbBytes;
+
+		for (int i = 0; i < length; i+=3)
+		{
+			c = Color(bytes[i], bytes[i + 1], bytes[i + 2]);
+			c = changer->SwapPixels(c);
+			bytes[i] = c.r * 255;
+			bytes[i+1] = c.g * 255;
+			bytes[i+2] = c.b * 255;
+		}
+		return bytes;
+	}
