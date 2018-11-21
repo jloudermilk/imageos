@@ -10,6 +10,9 @@ public class PaletteSwap : MonoBehaviour {
     private static extern bool StartUp();
     [DllImport("PaletteChanger")]
     private static extern void AddPalette(float[] hsv, int size);
+    [DllImport("PaletteChanger")]
+    private static extern IntPtr SubmitImage(IntPtr bytes);
+
 
     // Use this for initialization
     void Start () {
