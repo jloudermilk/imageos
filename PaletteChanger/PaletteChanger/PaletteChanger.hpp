@@ -5,7 +5,7 @@
 #include <map>
 #include <cmath>
 
-
+using namespace std;
 
 class Color 
 {
@@ -30,14 +30,14 @@ private:
 Color TempColor; //this is dirty but im short on time
 
 bool hueSort(Color &i, Color &j) {
-	return (std::abs(i.h - TempColor.h) < std::abs(j.h - TempColor.h));
+	return (abs(i.h - TempColor.h) < abs(j.h - TempColor.h));
 }
 
 bool saturationSort(Color &i, Color &j) {
-	return (std::abs(i.s - TempColor.s) < std::abs(j.s - TempColor.s));
+	return (abs(i.s - TempColor.s) <abs(j.s - TempColor.s));
 }
 bool brightnessSort(Color &i, Color &j) {
-	return (std::abs(i.v - TempColor.v) < std::abs(j.v - TempColor.v));
+	return (abs(i.v - TempColor.v) < abs(j.v - TempColor.v));
 }
 namespace std
 {
@@ -55,19 +55,21 @@ class PaletteChanger
 public:
 	PaletteChanger() {};
 	~PaletteChanger() {};
-	void AddPalette(float* hsvFloats,int size) 
+	void AddPalette(float* rgbFloats,int size) 
 	{
-		float* point = hsvFloats;
+		float* point = rgbFloats;
 		for (int i = 0; i < size; i++)
 		{
 			Color c;
-			c.h = *point;
+			c.r = *point;
 			point++;
-			c.s = *point;
+			c.g = *point;
 			point++;
-			c.v = *point;
-			c.hsv2rgb();
+			c.b = *point;
+			c.rgb2hsv();
+			palette.emplace(palette.begin(),c);
 		}
+		
 	}
 	Color SwapPixels(Color in)
 	{
@@ -76,21 +78,20 @@ public:
 			colorMap.at(in);
 		}
 		TempColor = in;
-		std::sort(palette.begin(),palette.end(), brightnessSort);
+		sort(palette.begin(),palette.end(), brightnessSort);
 		int half = palette.size() / 2;
-		std::sort(palette.begin(), palette.begin() + half, hueSort);
+		sort(palette.begin(), palette.begin() + half, hueSort);
 		half /= 2;
-		std::sort(palette.begin(), palette.begin() + half, saturationSort);
+		sort(palette.begin(), palette.begin() + half, saturationSort);
 		
 		Color out = palette.at(0);
-		std::map<Color,Color>::iterator it = colorMap.begin();
-		colorMap.insert(it,std::pair<Color, Color>( in, out) );
+		colorMap.emplace( in, out );
 		
 		return out;
 	}
 private:
-	std::vector<Color> palette;
-	std::map<Color, Color> colorMap;
+	vector<Color> palette;
+	map<Color, Color> colorMap;
 };
 
 
